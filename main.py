@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
 import json
+from fastapi import Form
 
 app = FastAPI()
 
@@ -25,8 +26,14 @@ USER_DB_FILE = "users.json"
 
 # ------------------ Utilities ------------------
 def load_users():
-    if not os.path.exists(USER_DB_FILE):
-        return {}
+    with open(USER_DB_FILE, "r") as file:
+        content = file.read()
+        if not content:
+            with open(USER_DB_FILE, "w") as f:
+                f.write("{}")
+        else:
+            pass
+
     with open(USER_DB_FILE, "r") as file:
         return json.load(file)
 
@@ -54,7 +61,7 @@ def decode_token(token: str):
 
 # ------------------ Endpoints ------------------
 @app.post("/signup")
-def signup(username: str, password: str):
+def signup(username: str = Form(...), password: str = Form(...)):
     users = load_users()
     if username in users:
         raise HTTPException(status_code=400, detail="Username already exists")
